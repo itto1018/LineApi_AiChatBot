@@ -1,0 +1,104 @@
+import { messagingApi } from '@line/bot-sdk';
+import OpenAI from 'openai';
+
+const config = {
+  channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN,
+  channelSecret: process.env.CHANNEL_SECRET || '',
+};
+
+const client = new messagingApi.MessagingApiClient(config);;
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+
+  try {
+    const events = req.body.events;
+    
+    // イベントが存在しない場合は200を返す
+    if (!events || events.length === 0) {
+      return res.status(200).json({ message: 'No events' });
+    }
+
+    // 各イベントを処理
+    await Promise.all(events.map(handleEvent));
+    
+    res.status(200).json({ message: 'OK' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+async function handleEvent(event) {
+  // メッセージイベント以外は無視
+  if (event.type !== 'message' || event.message.type !== 'text') {
+    return;
+  }
+
+  const message = event.message.text;
+  const userId = event.source.userId;
+  const groupId = event.source.groupId;
+
+  try {
+    // メンションされているかチェック（@botname の形式）
+    // 実際のボット名やユーザーIDでの判定に調整してください
+    const isMentioned = message.includes('@') || message.startsWith('!');
+    
+    if (!isMentioned) {
+      return; // メンションされていない場合は無視
+    }
+
+    // メンション部分を削除してクリーンな質問を取得
+    const cleanMessage = message.replace(/@\w+\s*/, '').replace(/^!\s*/, '').trim();
+    
+    if (!cleanMessage) {
+      return; // 質問内容がない場合は無視
+    }
+
+    // OpenAI APIに問い合わせ
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: `
+            あなたはLINEグループのLINE Botです。以下の条件で回答してください：
+            - 100文字以内で簡潔に答える
+            - 専門用語は避けて分かりやすく説明
+            - 必要に応じて「詳しくは○○で検索してみてください」と付け加える
+            - 日本語で回答する
+            - 高校生にも理解できるように説明する
+            `
+        },
+        {
+          role: 'user',
+          content: cleanMessage
+        }
+      ],
+      max_tokens: 150,
+      temperature: 0.7,
+    });
+
+    const aiResponse = completion.choices[0].message.content;
+
+    // LINEに返信
+    await client.replyMessage(event.replyToken, {
+      type: 'text',
+      text: aiResponse
+    });
+
+  } catch (error) {
+    console.error('Error handling message:', error);
+    
+    // エラー時の返信
+    await client.replyMessage(event.replyToken, {
+      type: 'text',
+      text: '申し訳ありません。エラーが発生しました。少し時間をおいてから再度お試しください。'
+    });
+  }
+}

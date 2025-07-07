@@ -1,16 +1,33 @@
 {
   "name": "line-api-fam",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "api/webhook.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "start": "echo 'Use vercel dev for local development'"
   },
-  "keywords": [],
+  "keywords": [
+    "line",
+    "bot",
+    "openai",
+    "gpt"
+  ],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "AI Chat Bot for LINE using OpenAI",
   "dependencies": {
     "@line/bot-sdk": "^10.0.0",
     "openai": "^5.8.2"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itto1018/LineApi_AiChatBot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/itto1018/LineApi_AiChatBot/issues"
+  },
+  "homepage": "https://github.com/itto1018/LineApi_AiChatBot#readme"
 }
