@@ -2,8 +2,8 @@ import { messagingApi } from '@line/bot-sdk';
 import OpenAI from 'openai';
 
 const config = {
-  channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN,
-  channelSecret: process.env.CHANNEL_SECRET || '',
+  channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
+  channelSecret: process.env.LINE_CHANNEL_SECRET || '',
 };
 
 const client = new messagingApi.MessagingApiClient(config);;
@@ -41,8 +41,6 @@ async function handleEvent(event) {
   }
 
   const message = event.message.text;
-  const userId = event.source.userId;
-  const groupId = event.source.groupId;
 
   try {
     // メンションされているかチェック（@botname の形式）
@@ -87,18 +85,23 @@ async function handleEvent(event) {
     const aiResponse = completion.choices[0].message.content;
 
     // LINEに返信
-    await client.replyMessage(event.replyToken, {
-      type: 'text',
-      text: aiResponse
+    await client.replyMessage({
+      replyToken: event.replyToken,
+      messages: [{
+        type: 'text',
+        text: aiResponse
+      }]
     });
-
   } catch (error) {
     console.error('Error handling message:', error);
     
     // エラー時の返信
-    await client.replyMessage(event.replyToken, {
-      type: 'text',
-      text: '申し訳ありません。エラーが発生しました。少し時間をおいてから再度お試しください。'
+    await client.replyMessage({
+      replyToken: event.replyToken,
+      messages: [{
+        type: 'text',
+        text: '申し訳ありません。エラーが発生しました。少し時間をおいてから再度お試しください。'
+      }]
     });
   }
 }
