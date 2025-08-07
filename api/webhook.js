@@ -34,6 +34,8 @@ export default async function handler(req, res) {
   }
 }
 
+const LINE_BOT_NAME = process.env.LINE_BOT_NAME || '';
+
 async function handleEvent(event) {
   // メッセージイベント以外は無視
   if (event.type !== 'message' || event.message.type !== 'text') {
@@ -43,19 +45,16 @@ async function handleEvent(event) {
   const message = event.message.text;
 
   try {
-    // メンションされているかチェック（@botname の形式）
-    // 実際のボット名やユーザーIDでの判定に調整してください
-    const isMentioned = message.includes('@') || message.startsWith('!');
-    
+    // Botがメンションされているかチェック
+    const isMentioned = message.toLowerCase().includes(`@${LINE_BOT_NAME.toLowerCase()}`);
     if (!isMentioned) {
-      return; // メンションされていない場合は無視
+      return;
     }
 
     // メンション部分を削除してクリーンな質問を取得
     const cleanMessage = message.replace(/@\w+\s*/, '').replace(/^!\s*/, '').trim();
-    
     if (!cleanMessage) {
-      return; // 質問内容がない場合は無視
+      return;
     }
 
     // OpenAI APIに問い合わせ
@@ -66,11 +65,14 @@ async function handleEvent(event) {
           role: 'system',
           content: `
             あなたはLINEグループのLINE Botです。以下の条件で回答してください：
-            - 100文字以内で簡潔に答える
-            - 専門用語は避けて分かりやすく説明
-            - 必要に応じて「詳しくは○○で検索してみてください」と付け加える
             - 日本語で回答する
+            - 200文字以内で簡潔に答える
+            - 必要に応じて「詳しくは○○で検索してみてください」と付け加える
             - 高校生にも理解できるように説明する
+            - 専門用語は避けて分かりやすく説明
+            - ネットミームや流行語を使用する
+            - ユーモアを交えて、親しみやすい口調で答える
+            - ただし、LINEの利用規約に違反しない内容である
             `
         },
         {
