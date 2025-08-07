@@ -1,21 +1,22 @@
 import { messagingApi } from '@line/bot-sdk';
 import OpenAI from 'openai';
 
-const config = {
+// API向け環境変数の取得
+const line_config = {
   channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
   channelSecret: process.env.LINE_CHANNEL_SECRET || '',
 };
-
-const client = new messagingApi.MessagingApiClient(config);;
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+const client = new messagingApi.MessagingApiClient(line_config);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
-
+  
   try {
     const events = req.body.events;
     
@@ -23,7 +24,7 @@ export default async function handler(req, res) {
     if (!events || events.length === 0) {
       return res.status(200).json({ message: 'No events' });
     }
-
+    
     // 各イベントを処理
     await Promise.all(events.map(handleEvent));
     
@@ -34,6 +35,7 @@ export default async function handler(req, res) {
   }
 }
 
+// Botの名前を環境変数から取得
 const LINE_BOT_NAME = process.env.LINE_BOT_NAME || '';
 
 async function handleEvent(event) {
