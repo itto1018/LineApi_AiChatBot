@@ -39,10 +39,6 @@ export default async function handler(req, res) {
 const LINE_BOT_NAME = process.env.LINE_BOT_NAME || '';
 
 async function handleEvent(event) {
-  // デバッグ用：グループIDをログ出力
-  if (event.source.type === 'group') {
-    console.log('Group ID:', event.source.groupId);
-  }
   // メッセージイベント以外は無視
   if (event.type !== 'message' || event.message.type !== 'text') {
     return;
