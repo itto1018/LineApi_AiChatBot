@@ -35,6 +35,24 @@ export default async function handler(req, res) {
   }
 }
 
+// トークン使用量を取得する関数
+async function getTokenUsage() {
+  try {
+    const endDate = new Date();
+    const startDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+    
+    const usage = await openai.usage.list({
+      start_date: startDate.toISOString().split('T')[0],
+      end_date: endDate.toISOString().split('T')[0],
+    });
+
+    return usage;
+  } catch (error) {
+    console.error('Error fetching token usage:', error);
+    throw error;
+  }
+}
+
 // Botの名前を環境変数から取得
 const LINE_BOT_NAME = process.env.LINE_BOT_NAME || '';
 
