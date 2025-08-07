@@ -35,28 +35,14 @@ export default async function handler(req, res) {
   }
 }
 
-// トークン使用量を取得する関数
-async function getTokenUsage() {
-  try {
-    const endDate = new Date();
-    const startDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
-    
-    const usage = await openai.usage.list({
-      start_date: startDate.toISOString().split('T')[0],
-      end_date: endDate.toISOString().split('T')[0],
-    });
-
-    return usage;
-  } catch (error) {
-    console.error('Error fetching token usage:', error);
-    throw error;
-  }
-}
-
 // Botの名前を環境変数から取得
 const LINE_BOT_NAME = process.env.LINE_BOT_NAME || '';
 
 async function handleEvent(event) {
+  // デバッグ用：グループIDをログ出力
+  if (event.source.type === 'group') {
+    console.log('Group ID:', event.source.groupId);
+  }
   // メッセージイベント以外は無視
   if (event.type !== 'message' || event.message.type !== 'text') {
     return;
@@ -125,5 +111,62 @@ async function handleEvent(event) {
         text: '申し訳ありません。エラーが発生しました。少し時間をおいてから再度お試しください。'
       }]
     });
+  }
+}
+
+
+// トークン使用量を取得する関数
+async function getTokenUsage() {
+  try {
+    const endDate = new Date();
+    const startDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+    
+    const usage = await openai.usage.list({
+      start_date: startDate.toISOString().split('T')[0],
+      end_date: endDate.toISOString().split('T')[0],
+    });
+
+    return usage;
+  } catch (error) {
+    console.error('Error fetching token usage:', error);
+    throw error;
+  }
+}
+
+// トークン使用量をLINEに通知する関数を追加
+export async function notifyTokenUsage() {
+  try {
+    const usage = await getTokenUsage();
+    const startDate = new Date();
+    startDate.setDate(1);
+    const endDate = new Date();
+
+    const usageMessage = [
+      "🤖 【定期実行】OpenAI APIの月間使用状況レポート",
+      `📅 集計期間: ${startDate.getMonth() + 1}月${startDate.getDate()}日～${endDate.getMonth() + 1}月${endDate.getDate()}日`,
+      `🔢 使用トークン数: ${usage.total_tokens?.toLocaleString() || 0}`,
+      `💰 概算費用: $${usage.total_cost?.toFixed(2) || 0}`,
+      "\n※費用は概算です。実際の請求額は異なる場合があります。"
+    ].join('\n');
+
+    // 開発者のユーザーIDまたはグループIDを環境変数から取得
+    const NOTIFY_TO = process.env.LINE_NOTIFY_TO;
+
+    if (!NOTIFY_TO) {
+      throw new Error('LINE_NOTIFY_TO is not set');
+    }
+
+    await client.pushMessage({
+      to: NOTIFY_TO,
+      messages: [{
+        type: 'text',
+        text: usageMessage
+      }]
+    });
+
+    return { success: true, message: 'Usage notification sent' };
+  } catch (error) {
+    console.error('Error sending usage notification:', error);
+    throw error;
   }
 }

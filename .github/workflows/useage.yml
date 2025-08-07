@@ -1,0 +1,50 @@
+name: Check OpenAI Token Usage
+
+on:
+  schedule:
+    # 毎月末日の21:00 JSTに実行（mm hh d m ddd）
+    - cron: '00 12 L * *'
+  
+  # 手動実行用
+  workflow_dispatch:
+
+jobs:
+  check-usage:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Create token usage check script
+        run: |
+          cat << EOF > check-usage.js
+          import { notifyTokenUsage } from './api/webhook.js';
+          
+          async function main() {
+            try {
+              await notifyTokenUsage();
+              console.log('Usage notification sent successfully');
+            } catch (error) {
+              console.error('Error:', error);
+              process.exit(1);
+            }
+          }
+          
+          main();
+          EOF
+      
+      - name: Run usage check
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          LINE_CHANNEL_SECRET: ${{ secrets.LINE_CHANNEL_SECRET }}
+          LINE_NOTIFY_TO: ${{ secrets.LINE_NOTIFY_TO }}
+        run: node check-usage.js
