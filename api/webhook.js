@@ -117,12 +117,15 @@ async function getTokenUsage() {
     const endDate = new Date();
     const startDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
     
-    const usage = await openai.usage.list({
-      start_date: startDate.toISOString().split('T')[0],
-      end_date: endDate.toISOString().split('T')[0],
+    const usage = await openai.billing.usage.list({
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0],
     });
 
-    return usage;
+    return {
+      total_tokens: usage.total_usage,
+      total_cost: usage.total_usage / 100
+    };
   } catch (error) {
     console.error('Error fetching token usage:', error);
     throw error;
