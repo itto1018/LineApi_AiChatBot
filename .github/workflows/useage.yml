@@ -2,8 +2,8 @@ name: Check OpenAI Token Usage
 
 on:
   schedule:
-    # 毎月末日の21:00 JSTに実行（mm hh d m ddd）
-    - cron: '00 12 L * *'
+    # 毎月28日の21:00 JSTに実行（mm hh d m ddd）
+    - cron: '00 12 28 * *'
   
   # 手動実行用
   workflow_dispatch:
