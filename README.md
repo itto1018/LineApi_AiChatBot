@@ -1,6 +1,6 @@
 # LINE AI ChatBot
 
-OpenAI GPT-4を活用したLINE用のAIチャットボットです。
+OpenAI APIを活用したLINE用のAIチャットボットです。
 
 ## 機能
 
