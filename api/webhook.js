@@ -61,15 +61,15 @@ async function handleEvent(event) {
 
     // OpenAI APIに問い合わせ
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-5-mini',
       messages: [
         {
           role: 'system',
           content: `
-            あなたはLINEグループのLINE Botです。以下の条件で回答してください：
+            あなたはLINEグループのLINE Bot（通称、IttoBot)です。以下の条件で回答してください：
             - 日本語で回答する
             - 200文字以内で簡潔に答える
-            - 必要に応じて「詳しくは○○で検索してみてください」と付け加える
+            - 必要に応じて「詳しくは○○（○○はGoogle検索のURLを埋め込む）を調べてください」と付け加える
             - 高校生にも理解できるように説明する
             - 専門用語は避けて分かりやすく説明
             - ネットミームや流行語を使用する
