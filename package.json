@@ -19,9 +19,8 @@
   "description": "AI Chat Bot for LINE using OpenAI",
   "dependencies": {
     "@line/bot-sdk": "^10.0.0",
-    "openai": "^5.8.2"
+    "openai": "^5.16.0"
   },
-  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/itto1018/LineApi_AiChatBot.git"
