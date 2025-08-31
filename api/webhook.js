@@ -61,7 +61,7 @@ async function handleEvent(event) {
 
     // OpenAI APIに問い合わせ
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-5-mini',
       messages: [
         {
           role: 'system',
