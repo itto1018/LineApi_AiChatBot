@@ -12,7 +12,7 @@ OpenAI APIを活用したLINE用のAIチャットボットです。
 - Node.js
 - Vercel (サーバーレスデプロイ)
 - LINE Messaging API
-- OpenAI API (GPT-4 mini)
+- OpenAI API (GPT-4.1 mini)
 
 ## セットアップ
 
